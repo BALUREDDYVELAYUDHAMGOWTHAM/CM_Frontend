@@ -1,0 +1,59 @@
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">CM</div>
+      <div>
+        <div class="brand-name">Coach Metrics</div>
+        <div class="brand-sub">Mentor Activity System</div>
+      </div>
+    </div>
+
+    <div class="role-tag" [class.admin-tag]="auth.isAdmin()" [class.coach-tag]="auth.isCoach()">
+      <mat-icon>{{ auth.isAdmin() ? 'admin_panel_settings' : 'school' }}</mat-icon>
+      {{ auth.isAdmin() ? 'Administrator' : 'Coach' }}
+    </div>
+
+    <nav class="nav">
+      <div class="nav-label">NAVIGATION</div>
+      <button class="nav-btn" *ngFor="let l of navLinks"
+              [class.nav-active]="isActive(l.path)"
+              [class.nav-agent]="l.highlight"
+              (click)="navigate(l.path)">
+        <mat-icon>{{ l.icon }}</mat-icon>
+        <span>{{ l.label }}</span>
+        <span class="ai-pill" *ngIf="l.highlight">AI</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="user-info">
+        <div class="user-init">{{ currentUser?.fullName?.[0] }}</div>
+        <div class="user-text">
+          <div class="user-name">{{ currentUser?.fullName }}</div>
+          <div class="user-role">{{ currentUser?.role }}</div>
+        </div>
+        <button mat-icon-button (click)="logout()" matTooltip="Logout" class="logout-icon">
+          <mat-icon>power_settings_new</mat-icon>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-breadcrumb">
+        <mat-icon>{{ auth.isAdmin() ? 'admin_panel_settings' : 'school' }}</mat-icon>
+        <span>{{ currentRoute.split('/')[1] | titlecase }}</span>
+        <mat-icon class="bc-sep">chevron_right</mat-icon>
+        <span class="bc-page">{{ currentRoute.split('/')[2] | titlecase }}</span>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-user">{{ currentUser?.fullName }}</span>
+        <div class="topbar-avatar">{{ currentUser?.fullName?.[0] }}</div>
+      </div>
+    </div>
+    <div class="page-wrap">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,19 @@
+.page{max-width:1360px;}
+.page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;h2{font-size:22px;font-weight:800;color:#1E293B;margin-bottom:3px;}p{font-size:13px;color:#64748B;}}
+.filter-bar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.search-box{display:flex;align-items:center;background:#fff;border:1.5px solid #E2E8F0;border-radius:8px;padding:0 10px;flex:1;min-width:200px;&:focus-within{border-color:#F59E0B;}mat-icon{color:#94A3B8;font-size:18px;width:18px;height:18px;}input{flex:1;border:none;outline:none;padding:9px 8px;font-size:13px;font-family:'DM Sans',sans-serif;color:#1E293B;background:transparent;}}
+.filter-select{background:#fff;border:1.5px solid #E2E8F0;border-radius:8px;padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;color:#475569;outline:none;}
+.mentor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+.mentor-card{background:#fff;border-radius:12px;border:1px solid #E2E8F0;overflow:hidden;transition:box-shadow .15s;&:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);}}
+.mc-header{display:flex;align-items:flex-start;gap:10px;padding:14px 16px;border-bottom:1px solid #F1F5F9;
+  .mc-name{font-size:13px;font-weight:700;color:#1E293B;} .mc-id{font-size:11px;color:#F59E0B;font-weight:700;}
+  .mc-email{font-size:11px;color:#94A3B8;} .mc-info{flex:1;}}
+.cm-avatar{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff;flex-shrink:0;&.sdet-av{background:#1D4ED8;}&.dotnet-av{background:#0891B2;}}
+.mc-body{padding:10px 16px;display:flex;flex-direction:column;gap:5px;}
+.mc-row{display:flex;align-items:center;gap:8px;font-size:12px;color:#64748B;mat-icon{font-size:14px;width:14px;height:14px;color:#F59E0B;}}
+.mc-hours{padding:12px 16px;background:#FEF3C7;border-top:1px solid #FDE68A;border-bottom:1px solid #FDE68A;
+  .mh-label{font-size:10px;font-weight:700;color:#92400E;text-transform:uppercase;letter-spacing:.4px;}
+  .mh-value{font-size:22px;font-weight:800;color:#D97706;} .mh-total{font-size:11px;color:#B45309;}}
+.mc-footer{padding:10px 16px;background:#F8FAFC;}
+.loading-wrap{display:flex;justify-content:center;padding:40px;}
+.empty-grid{text-align:center;padding:40px;grid-column:1/-1;mat-icon{font-size:48px;color:#CBD5E1;display:block;margin:0 auto 8px;width:48px;height:48px;} p{color:#94A3B8;}}

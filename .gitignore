@@ -1,0 +1,35 @@
+# Third-party dependency folders (Crucial!)
+node_modules/
+.npm/
+.yarn/
+
+# Local production/build outputs
+dist/
+tmp/
+out/
+.angular/
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Unit and End-to-End test outputs
+coverage/
+cypress/screenshots/
+cypress/videos/
+
+# OS-specific system files
+.DS_Store
+Thumbs.db
+
+# Developer IDE Configurations
+### VS Code ###
+.vscode/
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr

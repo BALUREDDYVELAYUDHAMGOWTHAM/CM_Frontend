@@ -1,0 +1,174 @@
+<div class="page">
+  <div class="page-header">
+    <div><h2>Coach Dashboard</h2><p>Your mentors · Sessions · Cohorts</p></div>
+    <div class="header-actions">
+      <button class="btn-outline" (click)="load()"><mat-icon>refresh</mat-icon> Refresh</button>
+      <button class="btn-amber" (click)="openSessionForm()">
+        <mat-icon>add_circle</mat-icon> Mentor Details
+      </button>
+    </div>
+  </div>
+
+  <div class="loading-wrap" *ngIf="loading"><mat-spinner diameter="40"></mat-spinner></div>
+
+  <ng-container *ngIf="!loading && stats">
+    <div class="kpi-grid">
+      <div class="cm-kpi" *ngFor="let k of kpis">
+        <div class="cm-kpi-icon" [style.background]="k.iconBg"><mat-icon [style.color]="k.iconColor">{{ k.icon }}</mat-icon></div>
+        <div class="cm-kpi-body"><div class="cm-kpi-label">{{ k.label }}</div><div class="cm-kpi-value">{{ k.value }}</div></div>
+      </div>
+    </div>
+
+    <div class="dash-row">
+
+      <!-- Top 5 Upcoming Sessions -->
+      <div class="cm-card upcoming-card">
+        <div class="cm-card-header">
+          <h3><mat-icon>event_upcoming</mat-icon> Top 5 Upcoming Sessions</h3>
+          <span class="badge amber" *ngIf="upcomingSessions.length">{{ upcomingSessions.length }}</span>
+        </div>
+        <div class="cm-empty" *ngIf="!upcomingSessions.length">
+          <mat-icon>event_available</mat-icon><p>No upcoming sessions scheduled</p>
+        </div>
+        <div class="session-list">
+          <div class="session-row" *ngFor="let s of upcomingSessions">
+            <div class="session-date-box">
+              <span class="sd-day">{{ s.sessionDate | date:'d' }}</span>
+              <span class="sd-month">{{ s.sessionDate | date:'MMM' }}</span>
+            </div>
+            <div class="session-info">
+              <div class="si-name">{{ s.mentorName }}</div>
+              <div class="si-meta">
+                <span class="badge sdet" *ngIf="s.department==='SDET'">SDET</span>
+                <span class="badge dotnet" *ngIf="s.department==='DOTNET'">.NET</span>
+                {{ s.fromTime }} – {{ s.toTime }}
+                <strong style="color:#059669"> {{ s.hours }}h</strong>
+              </div>
+              <div class="si-owner" *ngIf="s.batchOwnerName">
+                <mat-icon>person</mat-icon> {{ s.batchOwnerName }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions + Activity -->
+      <div class="right-col">
+        <div class="cm-card">
+          <div class="cm-card-header"><h3><mat-icon>flash_on</mat-icon> Quick Actions</h3></div>
+          <div class="qa-grid">
+            <button class="qa-tile" routerLink="/coach/mentors"><mat-icon>person_add</mat-icon><span>Add Mentor</span></button>
+            <button class="qa-tile" routerLink="/coach/tracker"><mat-icon>table_chart</mat-icon><span>Weekly Tracker</span></button>
+            <button class="qa-tile" (click)="openSessionForm()"><mat-icon>add_circle</mat-icon><span>Log Session</span></button>
+          </div>
+        </div>
+
+        <div class="cm-card mt16" *ngIf="stats.recentActivity?.length">
+          <div class="cm-card-header"><h3><mat-icon>history</mat-icon> Recent Activity</h3></div>
+          <div class="act-list">
+            <div class="act-row" *ngFor="let a of stats.recentActivity">
+              <div class="act-dot amber"></div>
+              <div><div class="act-desc">{{ a.description }}</div><div class="act-time">{{ a.createdAt | date:'short' }}</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </ng-container>
+</div>
+
+<!-- ── Coach Details / Session Form Modal ─────────────────────── -->
+<div class="modal-overlay" *ngIf="showSessionForm" (click)="showSessionForm=false">
+  <div class="session-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <mat-icon>add_circle</mat-icon>
+      <span>Mentor Details — Log Session</span>
+      <button class="modal-close" (click)="showSessionForm=false"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Step 1: Search mentor -->
+      <div class="search-section">
+        <div class="section-label">STEP 1 — SELECT MENTOR (by Associate ID or Name)</div>
+        <div class="search-row">
+          <div class="search-input-wrap">
+            <mat-icon>search</mat-icon>
+            <input [formControl]="$any(sessionForm.get('searchKey'))"
+                   placeholder="Enter Associate ID (e.g. ASC001) or Mentor Name..."
+                   (input)="onSearchKeyChange()">
+          </div>
+          <div class="mentor-chips">
+            <div class="mentor-chip" *ngFor="let m of allMentors"
+                 [class.selected]="selectedMentor?.id === m.id"
+                 (click)="onMentorSelect(m)">
+              <span class="chip-id">{{ m.associateId }}</span>
+              <span class="chip-name">{{ m.fullName }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <form [formGroup]="sessionForm" (ngSubmit)="saveSession()">
+
+        <!-- Auto-filled mentor info (read-only) -->
+        <div class="autofill-banner" *ngIf="selectedMentor">
+          <mat-icon>check_circle</mat-icon> Mentor autofilled — {{ selectedMentor.fullName }} ({{ selectedMentor.associateId }})
+        </div>
+
+        <div class="section-label mt12">MENTOR DETAILS (autofilled)</div>
+        <div class="form-grid-3">
+          <div class="field"><label>Full Name</label><input formControlName="fullName" readonly class="readonly"></div>
+          <div class="field"><label>Email</label><input formControlName="email" readonly class="readonly"></div>
+          <div class="field"><label>Associate ID</label><input formControlName="associateId" readonly class="readonly"></div>
+          <div class="field"><label>Department</label><input formControlName="department" readonly class="readonly"></div>
+          <div class="field"><label>Cohort Code</label><input formControlName="cohortCode" readonly class="readonly"></div>
+          <div class="field"><label>Contact</label><input formControlName="contact" readonly class="readonly"></div>
+          <div class="field"><label>Vertical Mapping</label><input formControlName="verticalMapping" readonly class="readonly"></div>
+          <div class="field"><label>Training Status</label><input formControlName="trainingStatus" readonly class="readonly"></div>
+        </div>
+
+        <div class="section-label mt16">SESSION DETAILS</div>
+        <div class="form-grid-2">
+          <div class="field">
+            <label>Batch Owner ID</label>
+            <input formControlName="batchOwnerId" placeholder="e.g. BOWN001">
+          </div>
+          <div class="field">
+            <label>Batch Owner Name</label>
+            <input formControlName="batchOwnerName" placeholder="e.g. John Smith">
+          </div>
+          <div class="field">
+            <label>Session Date *</label>
+            <input formControlName="sessionDate" type="date">
+          </div>
+          <div class="field">
+            <label>From Time *</label>
+            <input formControlName="fromTime" type="time" (change)="onTimeChange()">
+          </div>
+          <div class="field">
+            <label>To Time *</label>
+            <input formControlName="toTime" type="time" (change)="onTimeChange()">
+          </div>
+          <div class="field">
+            <label>Hours (auto-calculated)</label>
+            <input formControlName="hours" readonly class="readonly hours-field">
+          </div>
+        </div>
+
+        <div class="field mt8">
+          <label>Notes</label>
+          <textarea formControlName="notes" rows="2" placeholder="Optional session notes..."></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" (click)="showSessionForm=false">Cancel</button>
+          <button type="submit" class="btn-amber" [disabled]="savingSession || !selectedMentor">
+            <mat-spinner diameter="16" *ngIf="savingSession" style="display:inline-block;margin-right:4px"></mat-spinner>
+            {{ savingSession ? 'Saving...' : 'Save Session' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

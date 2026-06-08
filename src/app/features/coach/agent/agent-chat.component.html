@@ -1,0 +1,169 @@
+<div class="agent-page">
+
+  <div class="agent-header">
+    <div class="agent-title-row">
+      <div class="agent-icon"><mat-icon>smart_toy</mat-icon></div>
+      <div>
+        <h2>Session Agent</h2>
+        <p>Single update · Bulk update multiple mentors · New session</p>
+      </div>
+      <div class="agent-status"><span class="status-dot"></span> Active · 100% Private</div>
+    </div>
+  </div>
+
+  <!-- Intent guide -->
+  <div class="intent-guide">
+    <div class="ig-card">
+      <mat-icon style="color:#059669">person</mat-icon>
+      <div>
+        <div class="ig-title">Single Update</div>
+        <div class="ig-ex">"update 1 hr for Divya on 2nd Apr"</div>
+      </div>
+    </div>
+    <div class="ig-card bulk-card">
+      <mat-icon style="color:#F59E0B">group</mat-icon>
+      <div>
+        <div class="ig-title">Bulk Update ⭐</div>
+        <div class="ig-ex">"update 1 hr for Arun, Divya and Meena on 2nd Apr"</div>
+      </div>
+    </div>
+    <div class="ig-card">
+      <mat-icon style="color:#6D28D9">add_circle</mat-icon>
+      <div>
+        <div class="ig-title">New Session</div>
+        <div class="ig-ex">"virtual with Arun today 10am to 11:30am"</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-layout">
+    <div class="chat-window">
+      <div class="chat-messages">
+
+        <div class="msg-row" *ngFor="let m of messages; let i = index"
+             [class.user-row]="m.role==='user'"
+             [class.agent-row]="m.role==='agent'">
+
+          <div class="agent-av" *ngIf="m.role==='agent'"><mat-icon>smart_toy</mat-icon></div>
+
+          <div class="msg-content"
+               [class.user-bubble]="m.role==='user'"
+               [class.agent-bubble]="m.role==='agent'">
+
+            <div class="msg-text" [innerHTML]="formatText(m.text)"></div>
+
+            <!-- Bulk results list -->
+            <div class="bulk-results" *ngIf="m.bulkResults?.length">
+              <div class="br-row" *ngFor="let r of m.bulkResults"
+                   [class.br-ok]="r.saved" [class.br-err]="!r.saved">
+                <mat-icon>{{ r.saved ? 'check_circle' : 'cancel' }}</mat-icon>
+                <span class="br-name">{{ r.mentorName }}</span>
+                <span class="br-assoc">{{ r.associateId }}</span>
+                <span class="br-detail" *ngIf="r.saved">{{ r.hours }}h · {{ r.mode }}</span>
+                <span class="br-error" *ngIf="!r.saved">{{ r.error }}</span>
+              </div>
+            </div>
+
+            <!-- Session parsed card -->
+            <div class="parsed-card" *ngIf="!m.isTrackerUpdate && m.parsed && getParsedEntries(m.parsed).length">
+              <div class="pc-label">SESSION PREVIEW</div>
+              <div class="pc-grid">
+                <div class="pc-row" *ngFor="let e of getParsedEntries(m.parsed)">
+                  <span class="pc-key">{{ getFieldLabel(e.key) }}</span>
+                  <span class="pc-val">{{ e.value }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Confirm bar -->
+            <div class="confirm-bar" *ngIf="m.showForm && !m.saved"
+                 [class.bulk-confirm]="m.isBulkUpdate"
+                 [class.tracker-confirm]="m.isTrackerUpdate && !m.isBulkUpdate">
+              <div class="confirm-note">
+                <mat-icon>{{ m.isBulkUpdate ? 'group' : m.isTrackerUpdate ? 'table_chart' : 'event' }}</mat-icon>
+                {{ m.isBulkUpdate ? 'Update Weekly Tracker for all these mentors?' :
+                   m.isTrackerUpdate ? 'Update Weekly Tracker?' : 'Save this session?' }}
+              </div>
+              <div class="confirm-btns">
+                <button class="btn-cancel-sm" (click)="cancelSave(i)">
+                  <mat-icon>close</mat-icon> Cancel
+                </button>
+                <button class="btn-save-sm"
+                        [class.bulk-save]="m.isBulkUpdate"
+                        [class.tracker-save]="m.isTrackerUpdate && !m.isBulkUpdate"
+                        (click)="confirmSave(i)" [disabled]="loading">
+                  <mat-icon>check</mat-icon>
+                  {{ m.isBulkUpdate ? 'Yes, Update All' :
+                     m.isTrackerUpdate ? 'Yes, Update Tracker' : 'Yes, Save Session' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Saved + go to tracker -->
+            <div class="saved-row" *ngIf="m.saved">
+              <div class="saved-badge"><mat-icon>check_circle</mat-icon> Saved</div>
+              <button class="goto-btn" (click)="goToTracker()">
+                <mat-icon>table_chart</mat-icon> View in Weekly Tracker
+              </button>
+            </div>
+
+            <div class="msg-time">{{ m.timestamp | date:'h:mm a' }}</div>
+          </div>
+
+          <div class="user-av" *ngIf="m.role==='user'">You</div>
+        </div>
+
+        <!-- Typing -->
+        <div class="msg-row agent-row" *ngIf="loading">
+          <div class="agent-av"><mat-icon>smart_toy</mat-icon></div>
+          <div class="agent-bubble typing-bubble">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+        </div>
+        <div #chatBottom></div>
+      </div>
+
+      <div class="input-bar">
+        <textarea [(ngModel)]="inputText" (keydown)="onEnter($event)"
+          placeholder='e.g. "update 1 hr for Arun, Divya and Meena on 2nd Apr"'
+          rows="2" [disabled]="loading"></textarea>
+        <button class="send-btn" (click)="send()" [disabled]="!inputText.trim() || loading">
+          <mat-icon>send</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Right panel -->
+    <div class="right-panel">
+      <div class="suggestions-card">
+        <div class="sc-header"><mat-icon>lightbulb</mat-icon> Try these</div>
+        <div class="suggestion-list">
+          <div class="suggestion-chip" *ngFor="let s of suggestions"
+               (click)="useSuggestion(s.text)"
+               [class.bulk-chip]="s.label.includes('Bulk')">
+            <span class="chip-label" [class.bulk-label]="s.label.includes('Bulk')">{{ s.label }}</span>
+            <span class="chip-text">{{ s.text }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bulk-guide">
+        <div class="sc-header"><mat-icon>group</mat-icon> Bulk Update Syntax</div>
+        <div class="bg-list">
+          <div class="bg-item"><mat-icon>check</mat-icon>"Arun and Divya" — use <strong>and</strong></div>
+          <div class="bg-item"><mat-icon>check</mat-icon>"Arun, Divya, Meena" — use <strong>commas</strong></div>
+          <div class="bg-item"><mat-icon>check</mat-icon>Same date + hours for all</div>
+          <div class="bg-item"><mat-icon>check</mat-icon>Mode optional (default: Virtual)</div>
+        </div>
+      </div>
+
+      <div class="privacy-card">
+        <mat-icon>lock</mat-icon>
+        <div>
+          <div class="priv-title">100% Private</div>
+          <div class="priv-sub">All processing on your server only.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

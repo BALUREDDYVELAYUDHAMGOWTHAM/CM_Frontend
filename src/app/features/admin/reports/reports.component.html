@@ -1,0 +1,125 @@
+<!-- reports.component.html — NO pipes or escaped quotes inside binding expressions -->
+<div class="page">
+  <div class="page-header">
+    <div><h2>Performance Reports</h2><p>Mentor activity analytics · Filter by dept and date range · Export CSV</p></div>
+    <div class="header-actions">
+      <button class="btn-export" (click)="exportCsv()"><mat-icon>download</mat-icon> Export CSV</button>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <div class="period-tabs">
+      <button class="period-btn"
+              *ngFor="let p of periods"
+              [class.active]="periodFilter === p"
+              (click)="onPeriodChange(p)">
+        {{ p | titlecase }}
+      </button>
+    </div>
+
+    <input class="filter-date" type="date" [(ngModel)]="fromDate" (change)="load()">
+    <span style="font-size:12px;color:#64748B;align-self:center">to</span>
+    <input class="filter-date" type="date" [(ngModel)]="toDate" (change)="load()">
+
+    <select class="filter-select" [(ngModel)]="deptFilter" (change)="load()">
+      <option value="">All Departments</option>
+      <option value="SDET">SDET</option>
+      <option value="DOTNET">.NET/C#</option>
+    </select>
+
+    <button class="btn-amber" (click)="load()"><mat-icon>tune</mat-icon> Apply</button>
+  </div>
+
+  <!-- KPI Summary — values pre-formatted in TS, no pipes in binding -->
+  <div class="kpi-row">
+    <div class="kpi-chip" *ngFor="let k of kpis">
+      <mat-icon [style.color]="k.color">{{ k.icon }}</mat-icon>
+      <div>
+        <div class="kpi-val" [style.color]="k.color">{{ k.value }}</div>
+        <div class="kpi-lbl">{{ k.label }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report Table -->
+  <div class="table-card">
+    <div class="loading-wrap" *ngIf="loading"><mat-spinner diameter="36"></mat-spinner></div>
+
+    <div class="table-scroll" *ngIf="!loading">
+      <table mat-table [dataSource]="rows" class="rpt-table">
+
+        <ng-container matColumnDef="mentorName">
+          <th mat-header-cell *matHeaderCellDef>Mentor Name</th>
+          <td mat-cell *matCellDef="let r"><strong>{{ r.mentorName }}</strong></td>
+        </ng-container>
+
+        <ng-container matColumnDef="department">
+          <th mat-header-cell *matHeaderCellDef>Department</th>
+          <td mat-cell *matCellDef="let r">
+            <span class="badge"
+                  [class.sdet]="r.department === 'SDET'"
+                  [class.dotnet]="r.department === 'DOTNET'">
+              {{ r.department === 'DOTNET' ? '.NET/C#' : r.department }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="cohortCode">
+          <th mat-header-cell *matHeaderCellDef>Cohort</th>
+          <td mat-cell *matCellDef="let r" style="color:#64748B;font-size:12px">
+            {{ r.cohortCode || '—' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="coachName">
+          <th mat-header-cell *matHeaderCellDef>Coach</th>
+          <td mat-cell *matCellDef="let r" style="color:#475569;font-size:12px">
+            {{ r.coachName }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="totalSessions">
+          <th mat-header-cell *matHeaderCellDef>Sessions</th>
+          <td mat-cell *matCellDef="let r">
+            <span class="badge amber">{{ r.totalSessions }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="totalHours">
+          <th mat-header-cell *matHeaderCellDef>Total Hours</th>
+          <td mat-cell *matCellDef="let r" style="color:#059669;font-weight:700">
+            {{ r.totalHours | number:'1.0-1' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="avgDuration">
+          <th mat-header-cell *matHeaderCellDef>Avg Duration</th>
+          <td mat-cell *matCellDef="let r" style="color:#64748B">
+            {{ r.avgDuration | number:'1.0-1' }} hrs
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky:true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+            <div class="cm-empty">
+              <mat-icon>bar_chart</mat-icon>
+              <p>No data for selected filters</p>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Totals row -->
+      <div class="totals-row" *ngIf="rows.length">
+        <span class="tot-label">TOTALS</span>
+        <span class="tot-spacer"></span>
+        <span class="tot-val">{{ totalSessions }} sessions</span>
+        <span class="tot-val green">{{ totalHours | number:'1.0-1' }} hrs</span>
+        <span class="tot-val">{{ avgHrsSession | number:'1.0-1' }} avg</span>
+      </div>
+    </div>
+  </div>
+</div>

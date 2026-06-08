@@ -1,0 +1,71 @@
+<!-- features/auth/login.component.html -->
+<div class="login-root">
+
+  <!-- Left hero -->
+  <div class="hero-panel">
+    <div class="hero-inner">
+      <div class="hero-logo">
+        <span class="logo-mark">CM</span>
+        <span class="logo-text">Coach Metrics</span>
+      </div>
+      <h1>Mentor Activity<br><span>Management</span></h1>
+      <p>Track mentor-connect sessions, manage cohort progress, and generate performance reports — all in one place.</p>
+      <div class="stats-row">
+        <div class="stat-box"><span class="stat-val">14</span><span class="stat-lbl">Weeks Tracked</span></div>
+        <div class="stat-box"><span class="stat-val">2</span><span class="stat-lbl">Departments</span></div>
+        <div class="stat-box"><span class="stat-val">CSV</span><span class="stat-lbl">Export Ready</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right form -->
+  <div class="form-panel">
+    <div class="form-card">
+      <div class="form-top">
+        <div class="form-icon"><mat-icon>lock</mat-icon></div>
+        <h2>Sign in</h2>
+        <p>Access your Coach Metrics account</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="field">
+          <label>Email address</label>
+          <div class="input-wrap" [class.focused]="form.get('email')?.touched">
+            <mat-icon>alternate_email</mat-icon>
+            <input formControlName="email" type="email" placeholder="you@company.com">
+          </div>
+          <span class="err" *ngIf="form.get('email')?.invalid && form.get('email')?.touched">Enter a valid email</span>
+        </div>
+
+        <div class="field">
+          <label>Password</label>
+          <div class="input-wrap">
+            <mat-icon>key</mat-icon>
+            <input formControlName="password" [type]="hidePass ? 'password' : 'text'" placeholder="••••••••">
+            <button type="button" class="eye" (click)="hidePass = !hidePass">
+              <mat-icon>{{ hidePass ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login" [disabled]="loading">
+          <div class="spin" *ngIf="loading"></div>
+          <mat-icon *ngIf="!loading">login</mat-icon>
+          {{ loading ? 'Signing in...' : 'Sign In' }}
+        </button>
+      </form>
+
+      <div class="demo-section">
+        <div class="demo-label">DEMO ACCOUNTS</div>
+        <div class="demo-list">
+          <button class="demo-btn" *ngFor="let d of demos" (click)="fill(d)">
+            <mat-icon>{{ d.icon }}</mat-icon>
+            <span>{{ d.role }}: {{ d.email }}</span>
+          </button>
+        </div>
+        <p class="demo-hint">Click to pre-fill → then Sign In</p>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,171 @@
+<div class="page">
+  <div class="page-header">
+    <div><h2>Mentor Management</h2><p>Add, edit and manage mentor records · Search · Filter by dept and cohort</p></div>
+    <button class="btn-amber" (click)="openAdd()"><mat-icon>person_add</mat-icon> + Add Mentor</button>
+  </div>
+
+  <div class="stats-bar">
+    <div class="sb-item"><span class="sb-val" style="color:#1E293B">{{ myMentors }}</span><span class="sb-lbl">My Mentors</span></div>
+    <div class="sb-item"><span class="sb-val" style="color:#059669">{{ activeMentors }}</span><span class="sb-lbl">Active</span></div>
+    <div class="sb-item"><span class="sb-val" style="color:#D97706">{{ totalSessions }}</span><span class="sb-lbl">Total Sessions</span></div>
+  </div>
+
+  <div class="filter-bar">
+    <div class="search-box">
+      <mat-icon>search</mat-icon>
+      <input [(ngModel)]="searchTerm" placeholder="Search mentor name..." (ngModelChange)="load()">
+    </div>
+    <select class="filter-select" [(ngModel)]="deptFilter" (change)="load()">
+      <option value="">All Departments</option>
+      <option *ngFor="let d of departments" [value]="d.code">{{ d.name }}</option>
+    </select>
+    <select class="filter-select" [(ngModel)]="cohortFilter" (change)="load()">
+      <option value="">All Cohorts</option>
+      <option *ngFor="let c of cohorts" [value]="c">{{ c }}</option>
+    </select>
+    <button class="btn-outline" (click)="clearFilters()"><mat-icon>filter_alt_off</mat-icon> Clear</button>
+  </div>
+
+  <div class="table-card">
+    <div class="loading-wrap" *ngIf="loading"><mat-spinner diameter="36"></mat-spinner></div>
+    <div class="table-scroll" *ngIf="!loading">
+      <table mat-table [dataSource]="mentors" class="cm-table">
+
+        <ng-container matColumnDef="num">
+          <th mat-header-cell *matHeaderCellDef>#</th>
+          <td mat-cell *matCellDef="let m; let i=index"><span class="row-num">{{ i+1 }}</span></td>
+        </ng-container>
+
+        <ng-container matColumnDef="fullName">
+          <th mat-header-cell *matHeaderCellDef>Mentor Name</th>
+          <td mat-cell *matCellDef="let m">
+            <div class="name-cell">
+              <div class="cm-avatar" [class.sdet-av]="m.department==='SDET'" [class.dotnet-av]="m.department!='SDET'">{{ m.fullName[0] }}</div>
+              <div><div class="mentor-name">{{ m.fullName }}</div><div class="mentor-email">{{ m.email }}</div></div>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="associateId">
+          <th mat-header-cell *matHeaderCellDef>Associate ID</th>
+          <td mat-cell *matCellDef="let m">
+            <span class="assoc-badge">{{ m.associateId || '—' }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="department">
+          <th mat-header-cell *matHeaderCellDef>Department</th>
+          <td mat-cell *matCellDef="let m">
+            <span class="badge" [class.sdet]="m.department==='SDET'" [class.dotnet]="m.department==='DOTNET'">
+              {{ m.department }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="cohortCode">
+          <th mat-header-cell *matHeaderCellDef>Cohort</th>
+          <td mat-cell *matCellDef="let m"><span class="cohort-badge">{{ m.cohortCode || '—' }}</span></td>
+        </ng-container>
+
+        <ng-container matColumnDef="sessions">
+          <th mat-header-cell *matHeaderCellDef>Sessions / Hours</th>
+          <td mat-cell *matCellDef="let m">
+            <div class="session-info">
+              <span class="badge amber">{{ m.totalSessions }} sessions</span>
+              <span class="hrs-label">{{ m.totalHours | number:'1.0-1' }} hrs</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="trainingStatus">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let m">
+            <span class="badge" [ngClass]="getStatusClass(m.trainingStatus)">{{ m.trainingStatus | titlecase }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let m">
+            <div class="act-btns">
+              <button class="act-btn edit" (click)="openEdit(m)"><mat-icon>edit</mat-icon> Edit</button>
+              <button class="act-btn del"  (click)="confirmDelete(m)"><mat-icon>delete</mat-icon> Delete</button>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky:true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+            <div class="cm-empty"><mat-icon>people</mat-icon><p>No mentors found</p></div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="showModal=false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header" [class.edit-hdr]="editMode">
+      <mat-icon>{{ editMode ? 'edit' : 'person_add' }}</mat-icon>
+      <span>{{ editMode ? 'Edit Mentor' : 'Add New Mentor' }}</span>
+      <button class="modal-close" (click)="showModal=false"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="form-grid">
+          <div class="field"><label>Full Name *</label><input formControlName="fullName" placeholder="Mentor full name"></div>
+          <div class="field"><label>Associate ID *</label><input formControlName="associateId" placeholder="e.g. ASC001"></div>
+          <div class="field"><label>Email *</label><input formControlName="email" type="email" placeholder="mentor@org.com"></div>
+          <div class="field">
+            <label>Department *</label>
+            <select formControlName="department">
+              <option value="">Select Department</option>
+              <option *ngFor="let d of departments" [value]="d.code">{{ d.name }}</option>
+            </select>
+          </div>
+          <div class="field"><label>Cohort Code</label><input formControlName="cohortCode" placeholder="e.g. COH-2024-A"></div>
+          <div class="field"><label>Contact</label><input formControlName="contact" placeholder="Phone number"></div>
+          <div class="field">
+            <label>Vertical Mapping</label>
+            <select formControlName="verticalMapping">
+              <option value="">Select Vertical</option>
+              <option *ngFor="let v of verticals" [value]="v.name">{{ v.name }}</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Training Status</label>
+            <select formControlName="trainingStatus">
+              <option value="ACTIVE">Active</option>
+              <option value="ON_HOLD">On Hold</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="DROPPED">Dropped</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Notes</label><textarea formControlName="notes" rows="2" placeholder="Optional notes..."></textarea></div>
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" (click)="showModal=false">Cancel</button>
+          <button type="submit" class="btn-amber">{{ editMode ? 'Update Mentor' : 'Save Mentor' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Dialog -->
+<div class="modal-overlay" *ngIf="showDeleteDialog" (click)="showDeleteDialog=false">
+  <div class="del-dialog" (click)="$event.stopPropagation()">
+    <div class="del-icon"><mat-icon>warning</mat-icon></div>
+    <h3>Delete Mentor</h3>
+    <p>Delete <strong>{{ deletingMentor?.fullName }}</strong>?</p>
+    <p class="del-note">This will remove all 14 weekly connect records for this mentor.</p>
+    <div class="del-btns">
+      <button class="btn-outline" (click)="showDeleteDialog=false">Cancel</button>
+      <button class="btn-delete" (click)="doDelete()">Yes, Delete</button>
+    </div>
+  </div>
+</div>

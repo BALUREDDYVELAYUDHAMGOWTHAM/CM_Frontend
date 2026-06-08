@@ -1,0 +1,49 @@
+<div class="page">
+  <div class="page-header">
+    <div><h2>All Mentors</h2><p>System-wide mentor overview · Monthly hours from coach sessions</p></div>
+  </div>
+
+  <div class="filter-bar">
+    <div class="search-box">
+      <mat-icon>search</mat-icon>
+      <input [(ngModel)]="search" placeholder="Search by name, email or Associate ID..." (ngModelChange)="load()">
+    </div>
+    <select class="filter-select" [(ngModel)]="dept" (change)="load()">
+      <option value="">All Departments</option>
+      <option *ngFor="let d of departments" [value]="d.code">{{ d.name }}</option>
+    </select>
+  </div>
+
+  <div class="loading-wrap" *ngIf="loading"><mat-spinner diameter="36"></mat-spinner></div>
+
+  <div class="mentor-grid" *ngIf="!loading">
+    <div class="mentor-card" *ngFor="let m of filtered">
+      <div class="mc-header">
+        <div class="cm-avatar" [class.sdet-av]="m.department==='SDET'" [class.dotnet-av]="m.department!='SDET'">{{ m.fullName[0] }}</div>
+        <div class="mc-info">
+          <div class="mc-name">{{ m.fullName }}</div>
+          <div class="mc-id">{{ m.associateId || 'No ID' }}</div>
+          <div class="mc-email">{{ m.email }}</div>
+        </div>
+        <span class="badge" [class.sdet]="m.department==='SDET'" [class.dotnet]="m.department==='DOTNET'">{{ m.department }}</span>
+      </div>
+      <div class="mc-body">
+        <div class="mc-row"><mat-icon>group</mat-icon><span>{{ m.cohortCode || '—' }}</span></div>
+        <div class="mc-row"><mat-icon>school</mat-icon><span>{{ m.coachName }}</span></div>
+        <div class="mc-row"><mat-icon>layers</mat-icon><span>{{ m.verticalMapping || '—' }}</span></div>
+      </div>
+      <!-- Monthly hours highlight -->
+      <div class="mc-hours">
+        <div class="mh-label">{{ monthLabel }} Hours</div>
+        <div class="mh-value">{{ getMonthlyHours(m) | number:'1.0-1' }} hrs</div>
+        <div class="mh-total">Total: {{ m.totalSessions }} sessions</div>
+      </div>
+      <div class="mc-footer">
+        <span class="badge" [ngClass]="getStatusClass(m.trainingStatus)">{{ m.trainingStatus | titlecase }}</span>
+      </div>
+    </div>
+    <div class="empty-grid" *ngIf="!filtered.length">
+      <mat-icon>people</mat-icon><p>No mentors found</p>
+    </div>
+  </div>
+</div>

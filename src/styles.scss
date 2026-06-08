@@ -1,0 +1,127 @@
+/* ================================================================
+   COACH METRICS — Design System
+   Theme: Warm Amber + Dark Slate
+   Font: DM Sans — bold, professional
+   Completely different from SME Manager (navy) & Feedback Hub (indigo/teal)
+================================================================ */
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+:root {
+  --cm-amber:     #F59E0B;
+  --cm-amber-dk:  #D97706;
+  --cm-amber-lt:  #FEF3C7;
+  --cm-slate:     #1E293B;
+  --cm-slate-dk:  #0F172A;
+  --cm-slate-md:  #334155;
+  --cm-slate-lt:  #64748B;
+  --cm-slate-xs:  #94A3B8;
+  --cm-surface:   #F8FAFC;
+  --cm-card:      #FFFFFF;
+  --cm-border:    #E2E8F0;
+  --cm-sdet:      #1D4ED8;
+  --cm-dotnet:    #0891B2;
+  --cm-green:     #059669;
+  --cm-red:       #DC2626;
+  --cm-orange:    #EA580C;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
+  background: #F1F5F9;
+  color: var(--cm-slate);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Material minimal overrides */
+.mat-mdc-card          { border-radius: 12px !important; box-shadow: 0 1px 3px rgba(0,0,0,.06) !important; }
+.mat-mdc-raised-button { border-radius: 8px !important; font-family: 'DM Sans', sans-serif !important; font-weight: 700 !important; }
+
+/* Scrollbar */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+
+/* ── Pill badges ────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center; padding: 3px 10px;
+  border-radius: 6px; font-size: 11px; font-weight: 700; white-space: nowrap; gap: 4px;
+  &.sdet    { background: #DBEAFE; color: #1D4ED8; }
+  &.dotnet  { background: #CFFAFE; color: #0891B2; }
+  &.active  { background: #DCFCE7; color: #059669; }
+  &.inactive{ background: #FEE2E2; color: #DC2626; }
+  &.active-tr { background: #D1FAE5; color: #065F46; }
+  &.on-hold { background: #FEF3C7; color: #92400E; }
+  &.completed{ background: #EDE9FE; color: #5B21B6; }
+  &.dropped { background: #FEE2E2; color: #DC2626; }
+  &.amber   { background: #FEF3C7; color: #92400E; }
+  &.virtual { background: #E0F2FE; color: #0369A1; }
+  &.in-person{ background: #DCFCE7; color: #166534; }
+  &.not-happened{ background: #F1F5F9; color: #64748B; }
+  &.yes     { background: #DCFCE7; color: #166534; }
+  &.no      { background: #FEE2E2; color: #991B1B; }
+}
+
+/* ── KPI card ──────────────────────────────────────────────────── */
+.cm-kpi {
+  background: var(--cm-card); border-radius: 12px; padding: 18px 20px;
+  border: 1px solid var(--cm-border); position: relative; overflow: hidden;
+  .cm-kpi-label { font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .6px; color: var(--cm-slate-lt); margin-bottom: 6px; }
+  .cm-kpi-value { font-size: 32px; font-weight: 800; color: var(--cm-slate); line-height: 1; margin-bottom: 4px; }
+  .cm-kpi-sub   { font-size: 12px; color: var(--cm-slate-xs); }
+  .cm-kpi-icon  { position: absolute; right: 16px; top: 16px; width: 40px; height: 40px;
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    mat-icon { font-size: 20px; width: 20px; height: 20px; } }
+}
+
+/* ── Section card ──────────────────────────────────────────────── */
+.cm-card {
+  background: var(--cm-card); border-radius: 12px; border: 1px solid var(--cm-border);
+  padding: 20px;
+  .cm-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
+    h3 { font-size: 14px; font-weight: 700; color: var(--cm-slate); display: flex; align-items: center; gap: 6px;
+      mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--cm-amber); } } }
+}
+
+/* ── Table ─────────────────────────────────────────────────────── */
+.cm-table {
+  width: 100%;
+  th { background: #F8FAFC !important; font-size: 11px !important; font-weight: 700 !important;
+    text-transform: uppercase !important; letter-spacing: .5px !important; color: #64748B !important;
+    border-bottom: 2px solid #E2E8F0 !important; }
+  td { font-size: 13px !important; border-bottom: 1px solid #F1F5F9 !important; }
+  tr:nth-child(even) td { background: #FAFBFC !important; }
+  tr:hover td { background: #FEF3C7 !important; }
+}
+
+/* ── Empty state ────────────────────────────────────────────────── */
+.cm-empty {
+  text-align: center; padding: 40px;
+  mat-icon { font-size: 48px; width: 48px; height: 48px; color: #CBD5E1; display: block; margin: 0 auto 10px; }
+  p { color: #94A3B8; font-size: 14px; }
+}
+
+/* ── Avatar ─────────────────────────────────────────────────────── */
+.cm-avatar {
+  width: 34px; height: 34px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 13px; color: #fff; flex-shrink: 0;
+  &.amber  { background: #F59E0B; }
+  &.slate  { background: #475569; }
+  &.blue   { background: #1D4ED8; }
+  &.cyan   { background: #0891B2; }
+}
+
+/* ── Weekly tracker table cell ──────────────────────────────────── */
+.week-cell {
+  min-width: 110px; padding: 6px 8px; text-align: center; font-size: 11px;
+  border-right: 1px solid #E2E8F0;
+  &.happened  { background: #F0FDF4; }
+  &.missed    { background: #FEF2F2; }
+  &.empty     { background: #FAFAFA; color: #CBD5E1; }
+  .wc-mode  { font-size: 10px; font-weight: 700; margin-bottom: 2px; }
+  .wc-hours { font-size: 12px; font-weight: 700; color: var(--cm-green); }
+  .wc-date  { font-size: 10px; color: #94A3B8; }
+}

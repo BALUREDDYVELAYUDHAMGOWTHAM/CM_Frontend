@@ -1,0 +1,199 @@
+<!-- coach-management.component.html -->
+<div class="page">
+  <div class="page-header">
+    <div><h2>Coach Management</h2><p>Add, edit and manage coach profiles · Search · Filter · Paginate</p></div>
+    <button class="btn-amber" (click)="openAdd()"><mat-icon>person_add</mat-icon> + Add Coach</button>
+  </div>
+
+  <!-- Stats bar — WF-1 -->
+  <div class="stats-bar">
+    <div class="sb-item" *ngFor="let s of [
+      {label:'Total Coaches', value:totalCoaches,   color:'#1E293B'},
+      {label:'Active',        value:activeCoaches,  color:'#059669'},
+      {label:'Inactive',      value:inactiveCoaches,color:'#DC2626'},
+      {label:'Departments',   value:departments,    color:'#1D4ED8'}
+    ]">
+      <span class="sb-val" [style.color]="s.color">{{ s.value }}</span>
+      <span class="sb-lbl">{{ s.label }}</span>
+    </div>
+  </div>
+
+  <!-- Search + filters — WF-2 -->
+  <div class="filter-bar">
+    <div class="search-box" [class.focused]="true">
+      <mat-icon>search</mat-icon>
+      <input [(ngModel)]="searchTerm" placeholder="Search by name or email..." (ngModelChange)="load()">
+      <button *ngIf="searchTerm" (click)="searchTerm='';load()" class="clear-x">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <select class="filter-select" [(ngModel)]="deptFilter" (change)="load()">
+      <option value="">All Departments</option>
+      <option value="SDET">SDET</option>
+      <option value="DOTNET">.NET/C#</option>
+    </select>
+    <select class="filter-select" [(ngModel)]="statusFilter">
+      <option value="">All Status</option>
+      <option value="active">Active</option>
+      <option value="inactive">Inactive</option>
+    </select>
+    <button class="btn-outline" (click)="clearFilters()"><mat-icon>filter_alt_off</mat-icon> Clear</button>
+  </div>
+
+  <!-- Table — WF-3 -->
+  <div class="table-card">
+    <div class="loading-wrap" *ngIf="loading"><mat-spinner diameter="36"></mat-spinner></div>
+
+    <div class="table-scroll" *ngIf="!loading">
+      <table mat-table [dataSource]="filtered" class="cm-table">
+
+        <ng-container matColumnDef="num">
+          <th mat-header-cell *matHeaderCellDef>#</th>
+          <td mat-cell *matCellDef="let c; let i = index">
+            <span style="color:#94A3B8;font-size:12px">{{ i+1 }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="fullName">
+          <th mat-header-cell *matHeaderCellDef>Full Name</th>
+          <td mat-cell *matCellDef="let c">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="cm-avatar amber">{{ c.fullName[0] }}</div>
+              <div>
+                <div style="font-weight:700;color:#1E293B;font-size:13px">{{ c.fullName }}</div>
+                <div style="font-size:11px;color:#94A3B8">{{ c.mentorCount }} mentor{{ c.mentorCount !== 1 ? 's' : '' }}</div>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Email</th>
+          <td mat-cell *matCellDef="let c" style="color:#64748B;font-size:12px">{{ c.email }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="department">
+          <th mat-header-cell *matHeaderCellDef>Department</th>
+          <td mat-cell *matCellDef="let c">
+            <span class="badge" [class.sdet]="c.department==='SDET'" [class.dotnet]="c.department==='DOTNET'">
+              {{ c.department === 'DOTNET' ? '.NET/C#' : c.department }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="contact">
+          <th mat-header-cell *matHeaderCellDef>Contact</th>
+          <td mat-cell *matCellDef="let c" style="color:#64748B;font-size:12px">{{ c.contact || '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let c">
+            <span class="badge" [class.active]="c.active" [class.inactive]="!c.active">
+              {{ c.active ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let c">
+            <div style="display:flex;gap:6px">
+              <button class="act-btn edit" (click)="openEdit(c)"><mat-icon>edit</mat-icon> Edit</button>
+              <button class="act-btn del"  (click)="confirmDelete(c)"><mat-icon>delete</mat-icon> Delete</button>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky:true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+            <div class="cm-empty"><mat-icon>search_off</mat-icon><p>No coaches found</p></div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal — WF-4 / WF-5 -->
+<div class="modal-overlay" *ngIf="showModal" (click)="showModal=false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header" [class.edit-header]="editMode">
+      <mat-icon>{{ editMode ? 'edit' : 'person_add' }}</mat-icon>
+      <span>{{ editMode ? 'Edit Coach Profile' : 'Add New Coach' }}</span>
+      <button class="modal-close" (click)="showModal=false"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="modal-body">
+      <div class="edit-banner" *ngIf="editMode">✏ Editing coach — modified fields will be highlighted</div>
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="form-grid">
+          <div class="field">
+            <label>Full Name *</label>
+            <input formControlName="fullName" placeholder="e.g. Sarah Williams">
+            <span class="err" *ngIf="form.get('fullName')?.invalid && form.get('fullName')?.touched">Min 2 characters required</span>
+          </div>
+          <div class="field">
+            <label>Email Address *</label>
+            <input formControlName="email" type="email" placeholder="e.g. sarah@org.com">
+            <span class="err" *ngIf="form.get('email')?.invalid && form.get('email')?.touched">Valid email required</span>
+          </div>
+          <div class="field">
+            <label>Department *</label>
+            <select formControlName="department">
+              <option value="">Select department</option>
+              <option value="SDET">SDET</option>
+              <option value="DOTNET">.NET/C#</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Contact Number</label>
+            <input formControlName="contact" placeholder="e.g. 98765 43210">
+          </div>
+        </div>
+        <div class="field">
+          <label>Notes</label>
+          <textarea formControlName="notes" placeholder="Optional notes..." rows="3"></textarea>
+        </div>
+        <div class="status-toggle">
+          <span>Status</span>
+          <label class="toggle">
+            <input type="checkbox" formControlName="active">
+            <span class="slider"></span>
+          </label>
+          <span class="badge" [class.active]="form.get('active')?.value" [class.inactive]="!form.get('active')?.value">
+            {{ form.get('active')?.value ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" (click)="showModal=false">Cancel</button>
+          <button type="submit" class="btn-amber" [class.btn-green]="editMode">
+            {{ editMode ? 'Update Coach' : 'Save Coach' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Dialog — WF-6 -->
+<div class="modal-overlay" *ngIf="showDeleteDialog" (click)="showDeleteDialog=false">
+  <div class="del-dialog" (click)="$event.stopPropagation()">
+    <div class="del-icon-wrap"><mat-icon>warning</mat-icon></div>
+    <h3>Delete Coach Profile</h3>
+    <p>Are you sure you want to delete <strong style="color:#DC2626">{{ deletingCoach?.fullName }}</strong>?</p>
+    <p class="del-note">This action cannot be undone. The coach will lose all access immediately.</p>
+    <div class="del-impact" *ngIf="deletingCoach">
+      <mat-icon>info</mat-icon>
+      <span>{{ deletingCoach.mentorCount }} mentor record{{ deletingCoach.mentorCount !== 1 ? 's' : '' }} linked to this coach may be affected</span>
+    </div>
+    <div class="del-btns">
+      <button class="btn-outline" (click)="showDeleteDialog=false">Cancel</button>
+      <button class="btn-delete" (click)="doDelete()" [disabled]="deleting">
+        <mat-spinner diameter="16" *ngIf="deleting" style="display:inline-block;margin-right:4px"></mat-spinner>
+        Yes, Delete
+      </button>
+    </div>
+  </div>
+</div>
